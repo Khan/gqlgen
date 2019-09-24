@@ -24,6 +24,7 @@ type Config struct {
 	Exec                     PackageConfig              `yaml:"exec"`
 	Model                    PackageConfig              `yaml:"model,omitempty"`
 	Resolver                 PackageConfig              `yaml:"resolver,omitempty"`
+	Service                  PackageConfig              `yaml:"service,omitempty"`
 	AutoBind                 []string                   `yaml:"autobind"`
 	Models                   TypeMap                    `yaml:"models,omitempty"`
 	StructTag                string                     `yaml:"struct_tag,omitempty"`
@@ -42,6 +43,7 @@ func DefaultConfig() *Config {
 		SchemaFilename: StringList{"schema.graphql"},
 		Model:          PackageConfig{Filename: "models_gen.go"},
 		Exec:           PackageConfig{Filename: "generated.go"},
+		Service:        PackageConfig{Filename: "service.go"},
 		Directives:     map[string]DirectiveConfig{},
 	}
 }
@@ -242,6 +244,11 @@ func (c *Config) Check() error {
 			return errors.Wrap(err, "config.resolver")
 		}
 	}
+	if c.Service.IsDefined() {
+		if err := c.Service.Check(); err != nil {
+			return errors.Wrap(err, "config.service")
+		}
+	}
 
 	// check packages names against conflict, if present in the same dir
 	// and check filenames for uniqueness
@@ -252,6 +259,7 @@ func (c *Config) Check() error {
 	packageConfigList = append(packageConfigList, []PackageConfig{
 		c.Exec,
 		c.Resolver,
+		c.Service,
 	}...)
 	filesMap := make(map[string]bool)
 	pkgConfigsByDir := make(map[string]PackageConfig)
@@ -386,6 +394,12 @@ func (c *Config) normalize() error {
 	if c.Resolver.IsDefined() {
 		if err := c.Resolver.normalize(); err != nil {
 			return errors.Wrap(err, "resolver")
+		}
+	}
+
+	if c.Service.IsDefined() {
+		if err := c.Service.normalize(); err != nil {
+			return errors.Wrap(err, "service")
 		}
 	}
 

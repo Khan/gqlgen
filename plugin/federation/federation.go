@@ -215,8 +215,8 @@ func (f *federation) GenerateCode(data *codegen.Data) error {
 	}
 
 	return templates.Render(templates.Options{
-		PackageName:     data.Config.Exec.Package,
-		Filename:        "service.go",
+		PackageName:     data.Config.Service.Package,
+		Filename:        data.Config.Service.Filename,
 		Data:            f,
 		GeneratedHeader: true,
 	})
